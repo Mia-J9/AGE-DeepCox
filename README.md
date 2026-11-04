@@ -116,9 +116,9 @@ The input files must contain no missing values in the model columns. Age is stan
 
 No TCGA-derived example or test dataset is included in this repository.
 
-## Training AGE-DeepCox
+## Quick Start
 
-Train one cohort with:
+Train AGE-DeepCox on one cohort:
 
 ```bash
 python train.py single \
@@ -129,93 +129,13 @@ python train.py single \
   --seed 2027
 ```
 
-Replace the input paths and output directory for LUAD or BLCA. All three cohorts use the same model configuration.
+Replace the input and output paths for LUAD or BLCA. The command saves the fitted model, coefficients, predictions, and fit summary in the specified output directory.
 
-The configuration file records the reported model width, sparse penalties, repeat count, and random seed. Fixed optimization details are defined in `optimizer.py`.
-
-The training procedure:
-
-1. creates a stratified 70:30 training-validation split;
-2. standardizes gene expression and age using training-set statistics;
-3. residualizes each standardized age-by-gene feature against its corresponding gene feature using the training set;
-4. alternates proximal updates of the explicit coefficients with Adam updates of the nonlinear branch and learnable gate;
-5. calculates risk scores for the training and held-out validation sets; and
-6. saves the fitted model, coefficients, predictions, and fit summary.
-
-Tied event times in the Cox partial likelihood are handled using the Breslow approximation.
-
-## Repeated evaluation
-
-The study used 50 repeated stratified random splits. Stratification jointly considered event status and follow-up time dichotomized at the cohort median. Run the repeated analysis with:
+Additional commands are available for repeated training, gene-selection stability, age-permutation analysis, and predictive evaluation. Run:
 
 ```bash
-python train.py repeated \
-  --expression /path/to/KIRC_expression.csv \
-  --clinical /path/to/KIRC_clinical.csv \
-  --config configs.yaml \
-  --repeats 50 \
-  --output outputs/kirc/repeated
+python train.py -h
+python evaluate.py -h
 ```
 
-Repeated training also creates `predictions.csv` and `coefficients.csv` by combining the corresponding outputs from all runs. Evaluate the combined predictions with:
-
-```bash
-python evaluate.py \
-  --predictions outputs/kirc/repeated/predictions.csv \
-  --output outputs/kirc/evaluation
-```
-
-Predictive performance is evaluated on the held-out validation sets using:
-
-- Harrell's concordance index;
-- cumulative/dynamic AUC at one, three, and five years; and
-- survival-function-weighted mean AUC from one to five years.
-
-AUC estimates use inverse probability of censoring weighting. Metrics are summarized as mean and standard deviation across the repeated splits.
-
-## Gene-selection stability
-
-Reference-age and age-dependent modification effects are summarized separately across the 50 runs. A gene is considered stable when it is selected in more than half of the runs.
-
-```bash
-python train.py stability \
-  --coefficients outputs/kirc/repeated/coefficients.csv \
-  --output outputs/kirc/selection_stability.csv
-```
-
-The resulting table reports reference-effect and modification-effect selection frequencies, mean coefficients, and indicators for frequencies above 0.5.
-
-## Training-set age-permutation analysis
-
-The age-permutation negative control preserves the expression values, survival outcomes, validation observations, and original split assignments. Age is permuted only among the training patients within each repeated split, after which all age-dependent preprocessing quantities and model parameters are re-estimated.
-
-```bash
-python train.py age-permutation \
-  --expression /path/to/KIRC_expression.csv \
-  --clinical /path/to/KIRC_clinical.csv \
-  --config configs.yaml \
-  --repeats 50 \
-  --output outputs/kirc/age_permutation
-```
-
-The command produces fitted coefficients and risk predictions under permuted training ages. Run `evaluate.py` on the combined `predictions.csv` to calculate the corresponding performance metrics.
-
-## Output files
-
-A repeated-training directory contains:
-
-```text
-run_001.pt
-run_001_coefficients.csv
-run_001_predictions.csv
-coefficients.csv
-predictions.csv
-runs.csv
-```
-
-- `run_001.pt`: fitted model state, preprocessing parameters, and fit summary
-- `run_001_coefficients.csv`: reference-age and age-modification coefficients
-- `run_001_predictions.csv`: training and held-out validation risk scores
-- `coefficients.csv`: coefficients combined across repeated runs
-- `predictions.csv`: predictions combined across repeated runs
-- `runs.csv`: run seeds, convergence summaries, and output paths
+for the full command-line options. Implementation details are provided in `model.py`, `optimizer.py`, `train.py`, and `evaluate.py`.
