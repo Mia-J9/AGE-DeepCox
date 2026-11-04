@@ -4,8 +4,6 @@ AGE-DeepCox is an interpretable survival-analysis framework for estimating conti
 
 The framework was developed for high-dimensional cancer transcriptomic data and evaluated on the TCGA kidney renal clear cell carcinoma (KIRC), lung adenocarcinoma (LUAD), and bladder urothelial carcinoma (BLCA) cohorts.
 
-Gene-expression and clinical data were obtained and preprocessed as described in the manuscript. This repository expects a processed sample-by-gene expression matrix and a clinical survival table as input. Data acquisition and upstream transcriptomic preprocessing are not included in this repository.
-
 ## Overview
 
 Many survival models assume that the prognostic effect of a gene remains constant across patients. AGE-DeepCox instead represents the effect of gene *j* for patient *i* as
@@ -114,28 +112,34 @@ S002,420,0,71
 
 The input files must contain no missing values in the model columns. Age is standardized using the training-set mean and standard deviation within each split; it is not dichotomized into younger and older subgroups.
 
-No TCGA-derived example or test dataset is included in this repository.
-
 ## Quick Start
 
-Train AGE-DeepCox on one cohort:
+Prepare the expression matrix and clinical survival table in the formats shown above, then run:
 
 ```bash
 python train.py single \
-  --expression /path/to/KIRC_expression.csv \
-  --clinical /path/to/KIRC_clinical.csv \
+  --expression /path/to/expression.csv \
+  --clinical /path/to/clinical.csv \
   --config configs.yaml \
-  --output outputs/kirc/run_01 \
+  --output outputs/run_01 \
   --seed 2027
 ```
 
-Replace the input and output paths for LUAD or BLCA. The command saves the fitted model, coefficients, predictions, and fit summary in the specified output directory.
+Here:
 
-Additional commands are available for repeated training, gene-selection stability, age-permutation analysis, and predictive evaluation. Run:
+- `--expression` specifies the sample-by-gene expression matrix;
+- `--clinical` specifies the survival table matched by `sampleID`;
+- `--config` provides the model width and sparse penalties;
+- `--output` specifies where the results will be saved; and
+- `--seed` controls the data split and model initialization.
+
+The output directory contains the fitted model, estimated reference and age-modification coefficients, risk predictions for the training and validation sets, and a fit summary.
+
+For repeated training, gene-selection stability, age-permutation analysis, predictive evaluation, and the full command-line options, run:
 
 ```bash
 python train.py -h
 python evaluate.py -h
 ```
 
-for the full command-line options. Implementation details are provided in `model.py`, `optimizer.py`, `train.py`, and `evaluate.py`.
+Implementation details are provided in `model.py`, `optimizer.py`, `train.py`, and `evaluate.py`.
