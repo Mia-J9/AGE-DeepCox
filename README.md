@@ -133,7 +133,22 @@ Here:
 - `--output` specifies where the results will be saved; and
 - `--seed` controls the data split and model initialization.
 
-The output directory contains the fitted model, estimated reference and age-modification coefficients, risk predictions for the training and validation sets, and a fit summary.
+After training, the output directory contains:
+
+```text
+outputs/run_01/
+|-- run_001.pt
+|-- run_001_coefficients.csv
+|-- run_001_predictions.csv
+`-- runs.json
+```
+
+Here:
+
+- `run_001.pt` stores the fitted model and preprocessing parameters;
+- `run_001_coefficients.csv` contains the estimated reference and age-modification effects for each gene;
+- `run_001_predictions.csv` contains the risk scores for the training and validation samples; and
+- `runs.json` records the random seed, convergence status, final objective value, gate value, and output paths.
 
 For repeated training, gene-selection stability, age-permutation analysis, predictive evaluation, and the full command-line options, run:
 
@@ -143,3 +158,17 @@ python evaluate.py -h
 ```
 
 Implementation details are provided in `model.py`, `optimizer.py`, `train.py`, and `evaluate.py`.
+
+## Reproducibility
+
+The default reproducibility settings are recorded in `configs.yaml`, with 50 repeated splits and a base seed of 2027. For run *r*, the code uses seed `2027 + r - 1` for data splitting and model initialization. Python dependencies are listed in `requirements.txt`.
+
+To use the default repeated-training setup, run:
+
+```bash
+python train.py repeated \
+  --expression /path/to/expression.csv \
+  --clinical /path/to/clinical.csv \
+  --config configs.yaml \
+  --output outputs/repeated
+```
