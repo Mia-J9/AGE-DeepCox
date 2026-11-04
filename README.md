@@ -158,17 +158,3 @@ python evaluate.py -h
 ```
 
 Implementation details are provided in `model.py`, `optimizer.py`, `train.py`, and `evaluate.py`.
-
-## Reproducibility
-
-The default reproducibility settings are recorded in `configs.yaml`, with 50 repeated splits and a base seed of 2027. For run *r*, the code uses seed `2027 + r - 1` for data splitting and model initialization. Python dependencies are listed in `requirements.txt`.
-
-To use the default repeated-training setup, run:
-
-```bash
-python train.py repeated \
-  --expression /path/to/expression.csv \
-  --clinical /path/to/clinical.csv \
-  --config configs.yaml \
-  --output outputs/repeated
-```
