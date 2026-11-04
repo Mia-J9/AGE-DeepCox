@@ -1,0 +1,10 @@
+model:
+  hidden_dim: 16
+
+optimizer:
+  lambda_reference: 0.25
+  lambda_modification: 0.10
+
+experiment:
+  repeats: 50
+  seed: 2027
